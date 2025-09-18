@@ -1,0 +1,87 @@
+2025-09-11 23:46:11,311 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:46:11,335 [WARNING]  * Debugger is active!
+2025-09-11 23:46:11,342 [INFO]  * Debugger PIN: 932-829-982
+2025-09-11 23:46:27,107 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:46:27,138 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-11 23:46:27,138 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-11 23:46:27,139 [INFO]  * Restarting with stat
+2025-09-11 23:46:27,356 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:46:27,367 [WARNING]  * Debugger is active!
+2025-09-11 23:46:27,370 [INFO]  * Debugger PIN: 932-829-982
+2025-09-11 23:53:46,087 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:53:46,135 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-11 23:53:46,135 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-11 23:53:46,135 [INFO]  * Restarting with stat
+2025-09-11 23:53:46,394 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:53:46,394 [WARNING]  * Debugger is active!
+2025-09-11 23:53:46,413 [INFO]  * Debugger PIN: 932-829-982
+2025-09-11 23:55:01,640 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:55:01,674 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-11 23:55:01,674 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-11 23:55:01,676 [INFO]  * Restarting with stat
+2025-09-11 23:55:01,896 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-11 23:55:01,901 [WARNING]  * Debugger is active!
+2025-09-11 23:55:01,914 [INFO]  * Debugger PIN: 932-829-982
+2025-09-15 12:23:56,522 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-15 12:23:56,575 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-15 12:23:56,575 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-15 12:23:56,576 [INFO]  * Restarting with stat
+2025-09-15 12:23:56,854 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-15 12:23:56,876 [WARNING]  * Debugger is active!
+2025-09-15 12:23:56,879 [INFO]  * Debugger PIN: 368-223-444
+2025-09-18 10:28:43,910 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:28:44,001 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-18 10:28:44,001 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-18 10:28:44,004 [INFO]  * Restarting with stat
+2025-09-18 10:28:44,316 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:28:44,335 [WARNING]  * Debugger is active!
+2025-09-18 10:28:44,342 [INFO]  * Debugger PIN: 592-338-117
+2025-09-18 10:30:46,787 [INFO] Home endpoint accessed
+2025-09-18 10:30:46,791 [INFO] 127.0.0.1 - - [18/Sep/2025 10:30:46] "GET / HTTP/1.1" 200 -
+2025-09-18 10:30:46,913 [INFO] 127.0.0.1 - - [18/Sep/2025 10:30:46] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-18 10:32:32,068 [INFO]  * Detected change in 'C:\\Users\\vikra\\Downloads\\RAG Agent\\agent_bridge.py', reloading
+2025-09-18 10:32:48,440 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:32:48,489 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-18 10:32:48,489 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-18 10:32:48,494 [INFO]  * Restarting with stat
+2025-09-18 10:32:48,901 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:32:48,926 [WARNING]  * Debugger is active!
+2025-09-18 10:32:48,937 [INFO]  * Debugger PIN: 592-338-117
+2025-09-18 10:32:55,061 [INFO] Home endpoint accessed
+2025-09-18 10:32:55,161 [INFO] 127.0.0.1 - - [18/Sep/2025 10:32:55] "GET / HTTP/1.1" 200 -
+2025-09-18 10:51:18,423 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:51:18,486 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-18 10:51:18,486 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-18 10:51:18,486 [INFO]  * Restarting with stat
+2025-09-18 10:51:18,961 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:51:18,984 [WARNING]  * Debugger is active!
+2025-09-18 10:51:18,993 [INFO]  * Debugger PIN: 592-338-117
+2025-09-18 10:51:22,213 [INFO] Home endpoint accessed
+2025-09-18 10:51:22,289 [INFO] 127.0.0.1 - - [18/Sep/2025 10:51:22] "[36mGET / HTTP/1.1[0m" 304 -
+2025-09-18 10:59:00,548 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:59:00,582 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-18 10:59:00,582 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-18 10:59:00,582 [INFO]  * Restarting with stat
+2025-09-18 10:59:00,975 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 10:59:00,992 [WARNING]  * Debugger is active!
+2025-09-18 10:59:00,996 [INFO]  * Debugger PIN: 592-338-117
+2025-09-18 10:59:04,752 [INFO] Home endpoint accessed
+2025-09-18 10:59:04,801 [INFO] 127.0.0.1 - - [18/Sep/2025 10:59:04] "[36mGET / HTTP/1.1[0m" 304 -
+2025-09-18 11:04:06,982 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 11:04:07,018 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-18 11:04:07,022 [INFO] [33mPress CTRL+C to quit[0m
+2025-09-18 11:04:07,024 [INFO]  * Restarting with stat
+2025-09-18 11:04:07,556 [INFO] Starting Flask server on http://127.0.0.1:5000
+2025-09-18 11:04:07,580 [WARNING]  * Debugger is active!
+2025-09-18 11:04:07,580 [INFO]  * Debugger PIN: 592-338-117
+2025-09-18 11:04:19,010 [INFO] Home endpoint accessed
+2025-09-18 11:04:19,077 [INFO] 127.0.0.1 - - [18/Sep/2025 11:04:19] "[36mGET / HTTP/1.1[0m" 304 -

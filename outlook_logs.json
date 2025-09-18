@@ -1,0 +1,44 @@
+[
+  {
+    "error_code": "0x80042108",
+    "title": "Unable to Connect to Incoming (POP3) Mail Server",
+    "symptoms": ["Outlook can't receive emails", "POP3 connection fails"],
+    "causes": ["Incorrect server settings", "Firewall blocking connection"],
+    "fix_steps": [
+      "Check internet connection",
+      "Verify POP/IMAP and SMTP settings",
+      "Temporarily disable antivirus"
+    ],
+    "tool_invocation": ["open_outlook", "navigate_settings", "repair_account"],
+    "severity": "medium",
+    "tags": ["connectivity", "POP3", "email-receive"]
+  },
+  {
+    "error_code": "0x800ccc0e",
+    "title": "Cannot Connect to Server",
+    "symptoms": ["Outlook fails to send/receive", "Server not found"],
+    "causes": ["Incorrect port settings", "ISP blocking SMTP"],
+    "fix_steps": [
+      "Check SMTP and IMAP port numbers",
+      "Enable SSL if required",
+      "Contact ISP if ports are blocked"
+    ],
+    "tool_invocation": ["open_outlook", "navigate_settings"],
+    "severity": "high",
+    "tags": ["server", "SMTP", "email-send"]
+  },
+  {
+    "error_code": "0x8004010F",
+    "title": "Outlook Data File Cannot Be Accessed",
+    "symptoms": ["Cannot open Outlook", "Profile loading fails"],
+    "causes": ["Corrupt PST/OST file", "Missing profile"],
+    "fix_steps": [
+      "Create a new Outlook profile",
+      "Repair PST/OST using ScanPST",
+      "Check file permissions"
+    ],
+    "tool_invocation": ["open_outlook", "repair_account"],
+    "severity": "critical",
+    "tags": ["profile", "PST", "startup"]
+  }
+]
