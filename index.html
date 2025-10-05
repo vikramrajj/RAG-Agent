@@ -1,472 +1,531 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Super Troubleshooting Assistant (SAT)</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #f0f4ff, #e6f7ff);
-      display: flex;
-      height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Agent - Intelligent Assistant</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/enhanced.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --border: rgba(148, 163, 184, 0.1);
+            --shadow: rgba(0, 0, 0, 0.25);
+        }
 
-    #main {
-      flex-grow: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: #555;
-      padding: 20px;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    #sidebar {
-      width: 420px;
-      background-color: #ffffff;
-      border-left: 1px solid #ccc;
-      padding: 20px;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s ease;
-      position: relative;
-    }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-    #sidebar.collapsed {
-      transform: translateX(100%);
-    }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(600px circle at 20% 80%, rgba(59, 130, 246, 0.15), transparent),
+                radial-gradient(800px circle at 80% 20%, rgba(16, 185, 129, 0.15), transparent),
+                radial-gradient(400px circle at 40% 40%, rgba(139, 92, 246, 0.1), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
 
-    #toggle-btn {
-      position: absolute;
-      left: -40px;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: #0078d4;
-      color: white;
-      border: none;
-      border-radius: 6px 0 0 6px;
-      padding: 6px;
-      cursor: pointer;
-    }
+        #workspace {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
 
-    #header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
+        .welcome-card {
+            max-width: 900px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px var(--shadow);
+            animation: fadeInUp 0.8s ease-out;
+        }
 
-    #mascot {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-image: url('https://via.placeholder.com/40');
-      background-size: cover;
-      background-position: center;
-    }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
 
-    h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-      flex-grow: 1;
-      margin-left: 10px;
-    }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    #menu {
-      position: relative;
-    }
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-    #menu button {
-      background-color: #0078d4;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+        .welcome-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
 
-    #menu-content {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 30px;
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      z-index: 1000;
-    }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
 
-    #menu-content button {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      border: none;
-      background: none;
-      text-align: left;
-      cursor: pointer;
-    }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-    #menu-content button:hover {
-      background-color: #f0f0f0;
-    }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px -12px var(--shadow);
+        }
 
-    #controls {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+        .feature-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    #mic-status {
-      font-size: 13px;
-      margin-left: 10px;
-      color: #d9534f;
-    }
+        .feature-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
 
-    .blinking {
-      animation: blink 1s infinite;
-    }
+        #chat-sidebar {
+            width: 420px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
 
-    #tabs {
-      display: flex;
-      margin-bottom: 10px;
-    }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-    .tab {
-      flex: 1;
-      padding: 8px;
-      text-align: center;
-      background-color: #eee;
-      cursor: pointer;
-      border-radius: 6px 6px 0 0;
-      border: 1px solid #ccc;
-    }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            position: relative;
+        }
 
-    .tab.active {
-      background-color: #ddd;
-      font-weight: bold;
-    }
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
 
-    #messages, #history {
-      flex-grow: 1;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      background-color: #fefefe;
-      display: none;
-      border-radius: 0 0 6px 6px;
-    }
+        .status-indicator.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-secondary);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
 
-    .message {
-      margin-bottom: 12px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background-color: #e6f0ff;
-      position: relative;
-      max-width: 90%;
-    }
+        .status-indicator.active .status-dot {
+            background: var(--accent-secondary);
+        }
 
-    .message strong {
-      color: #0078d4;
-    }
+        .status-indicator.active .status-dot::after {
+            background: rgba(16, 185, 129, 0.3);
+        }
 
-    .timestamp {
-      font-size: 11px;
-      color: #888;
-      margin-left: 5px;
-    }
+        .status-indicator.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
 
-    #status-bar {
-      font-size: 13px;
-      color: #555;
-      margin: 10px 0;
-    }
+        .status-indicator.inactive .status-dot {
+            background: #ef4444;
+        }
 
-    #typing-indicator {
-      font-size: 13px;
-      color: #0078d4;
-      margin-left: 10px;
-      display: none;
-    }
+        .status-indicator.inactive .status-dot::after {
+            background: rgba(239, 68, 68, 0.3);
+        }
 
-    #input-area {
-      display: flex;
-      margin-top: 10px;
-    }
+        @keyframes pulse {
 
-    #user-input {
-      flex-grow: 1;
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
+            0%,
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
 
-    #user-input:focus {
-      outline: none;
-      border-color: #0078d4;
-    }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
 
-    #quick-replies {
-      display: flex;
-      gap: 6px;
-      margin: 10px 0;
-      flex-wrap: wrap;
-    }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
 
-    .quick-btn {
-      background-color: #f0f0f0;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 20px;
-      cursor: pointer;
-    }
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .quick-btn:hover {
-      background-color: #d0e7ff;
-    }
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+            border-color: var(--accent-primary);
+        }
 
-    details {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-  </style>
+        .quick-action-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            max-height: 400px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .message strong {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        .professional-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Scrollbar styling */
+        #messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        #messages::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Browser results styling */
+        .search-results {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .result-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-secondary);
+        }
+
+        .result-item h4 {
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .result-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-link {
+            color: var(--accent-secondary);
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+
+        .result-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+
+            #chat-sidebar {
+                width: 100%;
+                height: 300px;
+            }
+
+            .welcome-card {
+                margin-bottom: 1rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .welcome-card {
+                padding: 2rem;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            #chat-sidebar {
+                height: 250px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <div id="main">Welcome to your workspace. SAT is ready to assist!</div>
+    <div id="workspace">
+        <div class="welcome-card">
+            <h1 class="welcome-title">
+                🤖 RAG Agent
+                <span class="professional-badge">Professional</span>
+            </h1>
+            <p class="welcome-subtitle">Your intelligent research and automation assistant</p>
 
-  <div id="sidebar">
-    <button id="toggle-btn" onclick="toggleSidebar()">⇤</button>
-
-    <div id="header">
-      <div id="mascot"></div>
-      <h2>Super Troubleshooting Assistant (SAT)</h2>
-      <div id="menu">
-        <button onclick="toggleMenu()">☰</button>
-        <div id="menu-content">
-          <button onclick="exportHistory()">Export Chat</button>
-          <button onclick="clearChat()">Hide Previous Chat</button>
+            <div class="feature-grid">
+                <div class="feature-card" data-action="search">
+                    <h3 class="feature-title">🔍 Smart Search</h3>
+                    <p class="feature-description">Advanced web search with intelligent filtering and summarization</p>
+                </div>
+                <div class="feature-card" data-action="shop">
+                    <h3 class="feature-title">🛒 Shopping Assistant</h3>
+                    <p class="feature-description">Find and compare products across multiple platforms</p>
+                </div>
+                <div class="feature-card" data-action="outlook">
+                    <h3 class="feature-title">📧 Email Integration</h3>
+                    <p class="feature-description">Seamless Outlook integration for email management</p>
+                </div>
+                <div class="feature-card" data-action="chat">
+                    <h3 class="feature-title">🎯 Intelligent Reasoning</h3>
+                    <p class="feature-description">Advanced AI reasoning with contextual understanding</p>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
-    <div id="controls">
-      <button onclick="toggleVoiceInput()">🎤 Mic</button>
-      <span id="mic-status"></span>
-      <span id="typing-indicator">SAT is typing...</span>
+    <div id="chat-sidebar">
+        <div class="sidebar-header">
+            <div id="agentStatus" class="status-indicator inactive">
+                <div class="status-dot"></div>
+                <span class="status-text">Connecting...</span>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-action-btn" data-tool="chat">💬 Chat</button>
+                <button class="quick-action-btn" data-tool="search">🔍 Search</button>
+                <button class="quick-action-btn" data-tool="shop">🛒 Shop</button>
+                <button class="quick-action-btn" data-tool="outlook">📧 Email</button>
+            </div>
+
+            <div id="toolActions" style="margin-top: 1rem;">
+                <!-- Dynamic tool-specific actions will appear here -->
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div id="messages">
+                <div class="message">
+                    <strong>Agent:</strong> Hello! I'm your RAG Assistant. How can I help you today?
+                    <div class="timestamp">Just now</div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask me anything..."
+                    autocomplete="off">
+                <button id="sendBtn" class="send-btn">Send</button>
+            </div>
+        </div>
     </div>
 
-    <div id="tabs">
-      <div class="tab active" onclick="switchTab('messages')">Chat</div>
-      <div class="tab" onclick="switchTab('history')">History</div>
-    </div>
-
-    <div id="messages"></div>
-    <div id="history"></div>
-
-    <div id="status-bar"></div>
-
-    <details id="diagnostics-panel" style="display:none;">
-      <summary>Diagnostics Results</summary>
-      <div id="diagnostics-content"></div>
-    </details>
-
-    <div id="quick-replies">
-      <button class="quick-btn" onclick="sendMessage('Outlook not working')">Outlook not working</button>
-      <button class="quick-btn" onclick="sendMessage('Run diagnostics')">Run diagnostics</button>
-      <button class="quick-btn" onclick="sendMessage('Open web version')">Open web version</button>
-    </div>
-
-    <div id="input-area">
-      <input type="text" id="user-input" placeholder="Describe your issue..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
-
-  <script>
-  const chatLog = [];
-
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("collapsed");
-  }
-
-  function toggleMenu() {
-    const menu = document.getElementById("menu-content");
-    menu.style.display = menu.style.display === "block" ? "none" : "block";
-  }
-
-  function switchTab(tabId) {
-    document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-    document.querySelectorAll("#messages, #history").forEach(div => div.style.display = "none");
-    document.getElementById(tabId).style.display = "block";
-    document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add("active");
-
-    if (tabId === "history") {
-      const historyDiv = document.getElementById("history");
-      historyDiv.innerHTML = "";
-      chatLog.forEach(entry => {
-        const msg = document.createElement("div");
-        msg.className = "message";
-        msg.innerHTML = `<strong>${entry.sender}:</strong> ${entry.text} <span class="timestamp">${entry.time}</span>`;
-        historyDiv.appendChild(msg);
-      });
-    }
-  }
-
-  function sendMessage(textOverride = null) {
-    const inputField = document.getElementById("user-input");
-    const input = textOverride || inputField.value.trim();
-    if (!input) return;
-
-    inputField.value = "";
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    chatLog.push({ sender: "You", text: input, time: timestamp });
-    appendMessage("You", input);
-    showTyping(true);
-
-    setTimeout(() => {
-      let response = `Thanks for sharing: "${input}". Let me look into that.`;
-      const lowerInput = input.toLowerCase();
-
-      if (lowerInput.includes("outlook") && lowerInput.includes("not working")) {
-        response += `<br><br>You can try opening <a href="#" onclick="openOWA()">Outlook Web Access</a> here.`;
-        document.getElementById("status-bar").textContent = "Launching Outlook Web Access and diagnostics...";
-        showDiagnostics("Outlook Web opened successfully.", "No major issues detected.", "Outlook profile appears intact.");
-      }
-
-      if (lowerInput.includes("teams") && lowerInput.includes("not working")) {
-        response += `<br><br>You can try opening <a href="#" onclick="openTeams()">Microsoft Teams Web</a> here.`;
-        document.getElementById("status-bar").textContent = "Launching Teams Web and diagnostics...";
-        showDiagnostics("Teams Web opened successfully.", "No network issues detected.", "Login token appears valid.");
-      }
-
-      chatLog.push({ sender: "Assistant", text: response, time: timestamp });
-      appendMessage("Assistant", response);
-      showTyping(false);
-    }, 1000);
-  }
-
-  function appendMessage(sender, text) {
-    const timestamp = `<span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
-    const msg = document.createElement("div");
-    msg.className = "message";
-    msg.innerHTML = `<strong>${sender}:</strong> ${text} ${timestamp}`;
-    document.getElementById("messages").appendChild(msg);
-    document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
-  }
-
-  function showTyping(show) {
-    document.getElementById("typing-indicator").style.display = show ? "inline" : "none";
-  }
-
-  function showDiagnostics(main, logs, registry) {
-    document.getElementById("diagnostics-panel").style.display = "block";
-    document.getElementById("diagnostics-content").innerHTML = `
-      <strong>Diagnostics:</strong><br>${main}<br><br>
-      <strong>System Logs:</strong><br>${logs}<br><br>
-      <strong>Registry Checks:</strong><br>${registry}
-    `;
-  }
-
-  function exportHistory() {
-    const historyText = chatLog.map(entry => `${entry.sender}: ${entry.text} (${entry.time})`).join("\n");
-    const blob = new Blob([historyText], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `SAT_chat_${new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')}.txt`;
-    link.click();
-  }
-
-  function clearChat() {
-    document.getElementById("messages").innerHTML = "";
-    chatLog.length = 0;
-  }
-
-  document.getElementById("user-input").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-
-  function toggleVoiceInput() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const micStatus = document.getElementById("mic-status");
-
-    if (!SpeechRecognition) {
-      alert("Voice input not supported in this browser.");
-      return;
-    }
-
-    if (window.recognition && window.isListening) {
-      window.recognition.stop();
-      micStatus.textContent = "";
-      micStatus.classList.remove("blinking");
-      window.isListening = false;
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
-    recognition.continuous = true;
-
-    recognition.onstart = () => {
-      micStatus.textContent = "🎙️ Listening...";
-      micStatus.classList.add("blinking");
-      window.isListening = true;
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[event.results.length - 1][0].transcript.trim();
-      document.getElementById("user-input").value = transcript;
-      sendMessage(transcript);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Voice input error:", event.error);
-      alert("Voice input failed. Please check microphone permissions.");
-      micStatus.textContent = "";
-      micStatus.classList.remove("blinking");
-      window.isListening = false;
-    };
-
-    recognition.onend = () => {
-      micStatus.textContent = "";
-      micStatus.classList.remove("blinking");
-      window.isListening = false;
-    };
-
-    window.recognition = recognition;
-    recognition.start();
-  }
-
-  function openOWA() {
-    const iframe = document.createElement("iframe");
-    iframe.src = "https://outlook.office.com/mail/";
-    iframe.style.width = "100%";
-    iframe.style.height = "400px";
-    iframe.style.border = "1px solid #ccc";
-    document.getElementById("status-bar").appendChild(iframe);
-  }
-
-  function openTeams() {
-    const iframe = document.createElement("iframe");
-    iframe.src = "https://teams.microsoft.com/";
-    iframe.style.width = "100%";
-    iframe.style.height = "400px";
-    iframe.style.border = "1px solid #ccc";
-    document.getElementById("status-bar").appendChild(iframe);
-  }
-</script>
+    <script src="/static/js/app.js"></script>
 </body>
+
 </html>

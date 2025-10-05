@@ -1,0 +1,36 @@
+{
+    "include": [
+        "sat_ui.html",
+        "agent_bridge.py",
+        "browser_integration.py",
+        "launch_browser_webui.py"
+    ],
+    "ignore": [
+        "reasoner.py",
+        "rag_loader.py",
+        "structured_logging.py",
+        "standardized_error_handler.py",
+        "voice_handler.py",
+        "browser_automation.py",
+        "error_handling.py",
+        "test_*.py",
+        "outlook_login.py",
+        "retriever.py",
+        "config.py",
+        "api_server.py"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        ".venv",
+        "browser-use-webui/.venv",
+        ".git",
+        "tests",
+        "test_*.py"
+    ],
+    "extraPaths": [
+        "./browser-use-webui"
+    ],
+    "pythonVersion": "3.10",
+    "pythonPlatform": "Windows",
+    "typeCheckingMode": "off"
+}

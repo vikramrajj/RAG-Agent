@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# VSCode
+.vscode/
+
+# Environment
+.env
+env/
+
+# Logs
+logs/
+*.log
+
+# FAISS / data
+*.faiss
+metadata.json
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Large installers / binaries (move to releases/ or external storage)
+OllamaSetup.exe
+releases/
+
+# Ignore pip cache
+pip-log.txt
+pip-delete-this-directory.txt

@@ -1,112 +1,457 @@
-# RAG-Agent
-# Agentic Tech Support LLM: A Screen-Sharing and Feedback-Driven Autonomous Support System
+# RAG Agent - Intelligent Troubleshooting Assistant
 
-**Author:** Vikram Rajpurohit  
-**ID:** 240375096
+A sophisticated Retrieval-Augmented Generation (RAG) agent designed to provide intelligent troubleshooting assistance for Microsoft Office applications. Built with modern Python frameworks and AI technologies, it combines semantic search, natural language processing, and web automation to deliver comprehensive support solutions.
 
-## Introduction
+## 🚀 Features
 
-Software complexity drives demand for efficient technical support. Traditional systems, reliant on human agents or static chatbots, struggle with context-specific issues (3). Agentic AI and large language models (LLMs) enable autonomous, adaptive support using screen sharing and feedback.
+### Core Capabilities
+- **Intelligent Troubleshooting**: AI-powered diagnosis and resolution for Office application issues
+- **Semantic Search**: Advanced vector-based retrieval using FAISS and sentence transformers
+- **Web Automation**: Browser-based task execution with Playwright integration
+- **Real-time Chat Interface**: Interactive web-based chat system with streaming responses
+- **Multi-modal Support**: Text, voice, and web interaction capabilities
 
-This research proposes an Agentic Tech Support LLM that leverages multimodal inputs (screen visuals, logs, dialogue) and reinforcement learning with human feedback (RLHF) to diagnose and resolve issues (1). It builds on human-AI interaction (2) and screen-based paradigms (3).
+### Technical Features
+- **Robust Error Handling**: Comprehensive error management with standardized logging
+- **Security-First Design**: Input validation, CSRF protection, and secure credential management
+- **Performance Monitoring**: Built-in health checks, metrics collection, and performance tracking
+- **Scalable Architecture**: Modular design with configurable components
+- **Production Ready**: Comprehensive testing, logging, and monitoring capabilities
 
-For HCI researchers and tech support providers, the project offers:
+## 📋 Table of Contents
 
-- **Academic:** Advances agentic AI applications.
-- **Technical:** Delivers a prototype for adaptive support.
-- **Business:** Reduces costs, enhances satisfaction.
-- **Social:** Improves digital accessibility.
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [API Documentation](#api-documentation)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Problem Statement
+## 🛠 Installation
 
-Technical support systems lack contextual awareness, underutilizing screen sharing and system logs (3). Current AI agents rarely adapt via user feedback (1), limiting effectiveness for complex issues.
+### Prerequisites
 
-This research addresses the need for autonomous, context-aware tech support using screen sharing, log analysis, and RLHF. Evaluated via user studies, it answers: Why is adaptive, screen-sharing-based support needed?
+- Python 3.8 or higher
+- Windows 10/11 (for Office integration)
+- Microsoft Office 365 or Office 2019+
+- Node.js 16+ (for web UI components)
 
-## Research Questions
+### Installation Steps
 
-The research is guided by:
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd RAG-Agent
+   ```
 
-1. How effectively can an agentic LLM interpret issues using screen-sharing and log analysis compared to text-based inputs?
-2. To what extent can RLHF improve accuracy and user satisfaction?
-3. What are the usability and ethical challenges in deploying such a system?
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-These questions are scoped for the dissertation timeframe and relevant to HCI.
+3. **Install dependencies**
+   ```bash
+   # Production installation
+   pip install -r requirements.txt
+   
+   # Development installation (includes testing tools)
+   pip install -r requirements-dev.txt
+   ```
 
-## Methods
+4. **Install Playwright browsers**
+   ```bash
+   playwright install
+   ```
 
-A mixed-methods approach will design, implement, and evaluate the system:
+5. **Set up configuration**
+   ```bash
+   # Copy and edit configuration files
+   cp config/app.yaml.example config/app.yaml
+   cp .env.example .env
+   ```
 
-1. **System Design:** Develop a multimodal LLM agent in Python, integrating open-source models (e.g., LLaMA) with screen-parsing (OpenCV, Tesseract OCR), log analysis, NLP, and RLHF (1).
+## 🚀 Quick Start
 
-2. **Prototype Implementation:** Build a prototype using PyTorch for RLHF, Flask for the interface, and LangChain/LangGraph for agentic workflows (7). The system will:
-   - **Agentic Browser Capabilities:** Use LangChain with Selenium to analyze browser errors (e.g., JavaScript console, network logs) and infer UI context (e.g., broken elements) (3). LangChain manages tool integration and conversational context for troubleshooting.
-   - **Windows Log Analysis:** Parse Windows Event Viewer logs using Python’s win32evtlog, inspired by Nxthink, to identify errors (e.g., application crashes, driver issues). LangChain integrates log data with screen visuals for comprehensive diagnostics.
-   - **Remote Task Execution:** Employ LangGraph to model troubleshooting as stateful graphs, orchestrating tasks (e.g., restarting services, clearing caches) on remote Windows systems via secure APIs (e.g., WinRM). LangGraph enables dynamic decision-making and feedback loops.
-   - Process screen captures, extract UI elements, and generate solutions via dialogue or automation, refined by RLHF.
+### 1. Configuration Setup
 
-3. **User Studies:** Test with 20–30 participants, comparing performance (accuracy, response time) to text-based chatbots, collecting qualitative feedback.
+Create a `.env` file in the project root:
 
-4. **Evaluation:** Measure issue resolution rate, user satisfaction (Likert scales), and RLHF improvement (reward convergence). Iterate based on feedback.
+```env
+# Flask Configuration
+FLASK_SECRET_KEY=your_secure_random_key_here
+FLASK_DEBUG=false
 
-Python’s libraries, LangChain, and LangGraph ensure robust development (7). OpenCV/Tesseract enable screen parsing, and RLHF aligns with adaptive learning (1). Browser automation, log analysis, and remote execution enhance context-awareness.
+# LLM Configuration
+OLLAMA_MODEL=llama3
+OLLAMA_BASE_URL=http://localhost:11434
+LLM_TEMPERATURE=0.1
+MAX_TOKENS=500
 
-## Ethical Implications
+# RAG Configuration
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+FAISS_INDEX_PATH=outlook_index.faiss
+METADATA_PATH=metadata.json
+MIN_RELEVANCE_SCORE=0.3
+MAX_RETRIEVAL_RESULTS=5
 
-Using the AI4People framework (4) and autonomous system insights (5), the project addresses:
+# Outlook Credentials (for Office integration)
+OUTLOOK_EMAIL=your_email@company.com
+OUTLOOK_PASSWORD=your_app_specific_password
 
-- **Privacy:** Screen sharing and log analysis risk data exposure. Data minimization and anonymization will be used (5).
-- **Transparency:** Users will be informed of agent actions.
-- **Bias:** LLM biases may affect diverse users. Inclusive datasets will be explored (2).
-- **Accountability:** Errors require human-in-the-loop escalation (6).
+# Paths
+SARA_PATH=C:\Program Files\Microsoft Support and Recovery Assistant\SaRA.exe
+DIAGNOSTICS_OUTPUT_DIR=C:\Diagnostics\Outlook
+LOG_DIRECTORY=logs
 
-Ethical guidelines from Ethics and AI (24 February 2025) ensure responsible deployment.
+# Performance Settings
+MAX_WORKER_THREADS=3
+REQUEST_TIMEOUT_SECONDS=60
+```
 
-## Requirements and Feasibility
+### 2. Initialize the System
 
-- **Functional:** Real-time screen parsing, log analysis, dialogue-based diagnosis, remote task execution, feedback-driven learning.
-- **Non-functional:** 80% issue resolution rate, <5-second response, secure data handling.
-- **User:** Intuitive interface, accessibility (e.g., text-to-speech).
+```bash
+# Generate FAISS index from your troubleshooting data
+python rag_loader.py
 
-Accessible tools (Python, OpenCV, PyTorch, LangChain, LangGraph) and a 6-month timeline ensure feasibility. Risks include:
+# Start the application
+python agent_bridge.py
+```
 
-- **Screen/Log Parsing Inaccuracies (Medium Likelihood, High Impact):** Use robust OCR/UI detection, manual validation.
-- **Slow RLHF Convergence (Medium Likelihood, Medium Impact):** Use pre-trained models, simulated feedback.
-- **User Recruitment Delays (Low Likelihood, Medium Impact):** Leverage university platforms.
+### 3. Access the Web Interface
 
-## Project Plan
+Open your browser and navigate to:
+- **Main Interface**: http://localhost:5000
+- **Health Check**: http://localhost:5000/health
+- **API Documentation**: http://localhost:5000/docs
 
-From 15 May 2025 to 15 November 2025, tasks include:
+## ⚙️ Configuration
 
-- **May 15–Jun 15:** Literature review, system design. Deliverable: Design document.
-- **Jun 16–Aug 15:** Prototype development (screen parsing, log analysis, LLM, RLHF). Milestone: Functional prototype.
-- **Aug 16–Sep 15:** Testing, refinement. Deliverable: Test report.
-- **Sep 16–Oct 15:** User studies, data collection. Milestone: Completed evaluations.
-- **Oct 16–Nov 10:** Analysis, dissertation writing. Deliverable: Draft dissertation.
-- **Nov 11–15:** Final revisions, submission. Deliverable: Final dissertation.
+### Environment Variables
 
-The schedule aligns with methods (Section 4).
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `FLASK_SECRET_KEY` | Flask secret key for sessions | - | Yes |
+| `OLLAMA_MODEL` | Ollama model name | `llama3` | No |
+| `OLLAMA_BASE_URL` | Ollama server URL | `http://localhost:11434` | No |
+| `EMBEDDING_MODEL` | Sentence transformer model | `all-MiniLM-L6-v2` | No |
+| `OUTLOOK_EMAIL` | Outlook email address | - | Yes |
+| `OUTLOOK_PASSWORD` | Outlook app password | - | Yes |
 
-## References
+### Configuration Files
 
-[1] Anonymous, Agentic AI for Scientific Discovery: A Survey of Progress, Challenges, and Future Directions, arXiv:2503.xxxxx, 2025.
+The system supports multiple configuration files in the `config/` directory:
 
-[2] Anonymous, Human-AI Interaction in the Age of Agentic AI: A System-Theoretical Approach, Frontiers in Human-Computer Interaction, doi:10.3389/xxxxx, 2025.
+- `app.yaml` - Main application configuration
+- `app.development.yaml` - Development-specific settings
+- `app.production.yaml` - Production-specific settings
 
-[3] T. Masterman, Computer Use and AI Agents: A New Paradigm for Screen Interaction, Medium, 2024, https://medium.com/tds-archive/computer-use-and-ai-agents.
+## 📚 API Documentation
 
-[4] L. Floridi, J. Cowls, M. Beltrametti, et al., AI4People—An Ethical Framework for a Good AI Society: Opportunities, Risks, Principles, and Recommendations, Minds and Machines, 28:689–707, 2018.
+### Core Endpoints
 
-[5] D.J. Glancy, Privacy in Autonomous Vehicles, Santa Clara Law Review, 52(4):1171–1239, 2012.
+#### Chat Interface
+```http
+POST /chat
+Content-Type: application/json
 
-[6] N.J. Goodall, Ethical Decision Making During Automated Driving, IEEE Intelligent Systems, 29(4):92–96, 2014.
+{
+  "message": "Outlook won't open",
+  "context": [],
+  "browser_mode": false
+}
+```
 
-[7] Anonymous, LangChain and LangGraph: Frameworks for Agentic AI Workflows, arXiv:2504.xxxxx, 2025.
+#### Web Search
+```http
+POST /search
+Content-Type: application/json
 
-[8] F. Pajares, Elements of a Proposal, 2007, http://des.emory.edu/mfp/proposal.html.
+{
+  "query": "Outlook error 0x80042108"
+}
+```
 
-[9] A.M. Wilkinson, The Scientist’s Handbook for Writing Papers and Dissertations, Prentice Hall, Englewood Cliffs, NJ, 1991.
+#### Browser Actions
+```http
+POST /open
+Content-Type: application/json
 
-[10] J.W. Creswell, Research Design: Qualitative and Quantitative Approaches, Sage, Thousand Oaks, CA, 1994.
+{
+  "url": "https://outlook.office365.com"
+}
+```
 
-[11] W. Wiersma, Research Methods in Education: An Introduction (Sixth edition), Allyn and Bacon, Boston, 1995.
+#### Diagnostics
+```http
+POST /diagnostics
+Content-Type: application/json
+
+{}
+```
+
+### Health Monitoring
+
+#### Basic Health Check
+```http
+GET /health
+```
+
+#### Detailed Health Check
+```http
+GET /health/detailed
+```
+
+#### Readiness Check
+```http
+GET /health/ready
+```
+
+#### Liveness Check
+```http
+GET /health/live
+```
+
+### Response Formats
+
+All API responses follow a consistent format:
+
+```json
+{
+  "type": "troubleshooting|browser|error",
+  "content": "Response content",
+  "metadata": {
+    "request_id": "uuid",
+    "timestamp": "2024-01-01T00:00:00Z",
+    "confidence": 0.95,
+    "sources": []
+  }
+}
+```
+
+## 🏗 Architecture
+
+### System Components
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Web Interface │    │   Agent Bridge  │    │   RAG System    │
+│                 │    │                 │    │                 │
+│  - Chat UI      │◄──►│  - Flask API    │◄──►│  - Retriever    │
+│  - Browser UI   │    │  - Auth/Validation│  │  - Reasoner     │
+│  - Admin Panel  │    │  - Rate Limiting │  │  - Loader       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │
+                                ▼
+                       ┌─────────────────┐
+                       │  External Tools │
+                       │                 │
+                       │  - Outlook      │
+                       │  - SaRA         │
+                       │  - Web Browsers │
+                       └─────────────────┘
+```
+
+### Key Modules
+
+- **`agent_bridge.py`** - Main Flask application and API endpoints
+- **`retriever.py`** - FAISS-based semantic search and retrieval
+- **`reasoner.py`** - LLM-based reasoning and response generation
+- **`web_agent.py`** - Browser automation and web interaction
+- **`tool_invoker.py`** - System tool execution and management
+- **`config.py`** - Configuration management and validation
+- **`security_utils.py`** - Security utilities and input validation
+- **`standardized_error_handler.py`** - Unified error handling system
+
+## 🧪 Development
+
+### Development Setup
+
+1. **Install development dependencies**
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+
+2. **Set up pre-commit hooks**
+   ```bash
+   pre-commit install
+   ```
+
+3. **Run in development mode**
+   ```bash
+   export FLASK_DEBUG=true
+   python agent_bridge.py
+   ```
+
+### Code Quality
+
+The project uses several tools to maintain code quality:
+
+- **Black** - Code formatting
+- **Flake8** - Linting
+- **MyPy** - Type checking
+- **Pytest** - Testing framework
+- **Pre-commit** - Git hooks
+
+### Running Tests
+
+```bash
+# Run all tests
+python run_tests.py
+
+# Run specific test categories
+python run_tests.py --individual
+python run_tests.py --coverage
+python run_tests.py --performance
+
+# Run with coverage report
+python -m pytest --cov=. --cov-report=html
+```
+
+## 🚀 Deployment
+
+### Docker Deployment
+
+```bash
+# Build the image
+docker build -t rag-agent .
+
+# Run the container
+docker run -p 5000:5000 -e FLASK_SECRET_KEY=your_key rag-agent
+```
+
+### Production Configuration
+
+1. **Set production environment variables**
+2. **Configure reverse proxy (nginx/Apache)**
+3. **Set up SSL/TLS certificates**
+4. **Configure monitoring and logging**
+5. **Set up backup procedures**
+
+### Environment-Specific Configurations
+
+- **Development**: `config/app.development.yaml`
+- **Production**: `config/app.production.yaml`
+- **Testing**: `config/app.testing.yaml`
+
+## 📊 Monitoring and Logging
+
+### Health Checks
+
+The system provides comprehensive health monitoring:
+
+- **System Resources**: CPU, memory, disk usage
+- **Database Status**: FAISS index and metadata accessibility
+- **External Services**: Ollama, Outlook connectivity
+- **Application Metrics**: Request rates, error rates, response times
+
+### Logging
+
+Structured logging with multiple levels:
+
+- **Application Logs**: `logs/rag_agent.log`
+- **Error Logs**: `logs/rag_agent_errors.log`
+- **Performance Logs**: `logs/rag_agent_performance.log`
+- **Security Logs**: `logs/rag_agent_security.log`
+
+### Metrics Collection
+
+- Request/response times
+- Error rates and types
+- Cache hit/miss ratios
+- Resource utilization
+- User interaction patterns
+
+## 🔒 Security
+
+### Security Features
+
+- **Input Validation**: Comprehensive sanitization and validation
+- **CSRF Protection**: Token-based CSRF prevention
+- **Rate Limiting**: Request rate limiting per IP/user
+- **Secure Headers**: Security headers on all responses
+- **Credential Management**: Secure storage and handling of credentials
+
+### Security Best Practices
+
+- Use strong, unique Flask secret keys
+- Enable HTTPS in production
+- Regularly update dependencies
+- Monitor security logs
+- Implement proper access controls
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+### Code Style
+
+- Follow PEP 8 guidelines
+- Use type hints where appropriate
+- Write comprehensive docstrings
+- Include unit tests for new features
+- Update documentation as needed
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### Getting Help
+
+- **Documentation**: Check this README and inline code documentation
+- **Issues**: Report bugs and request features via GitHub Issues
+- **Discussions**: Join community discussions in GitHub Discussions
+
+### Troubleshooting
+
+Common issues and solutions:
+
+1. **Ollama Connection Issues**
+   - Ensure Ollama is running on the correct port
+   - Check firewall settings
+   - Verify model availability
+
+2. **Outlook Integration Problems**
+   - Verify credentials in `.env` file
+   - Check Outlook app password setup
+   - Ensure Office applications are installed
+
+3. **FAISS Index Issues**
+   - Regenerate index with `python rag_loader.py`
+   - Check file permissions
+   - Verify embedding model compatibility
+
+### Performance Optimization
+
+- Adjust `MAX_WORKER_THREADS` based on system resources
+- Configure cache sizes appropriately
+- Monitor memory usage with large datasets
+- Use GPU-accelerated models when available
+
+## 🔄 Version History
+
+- **v1.0.0** - Initial release with core RAG functionality
+- **v1.1.0** - Added web automation and browser integration
+- **v1.2.0** - Enhanced security and error handling
+- **v1.3.0** - Performance improvements and monitoring
+- **v2.0.0** - Complete architecture overhaul and standardization
+
+---
+
+**Built with ❤️ for intelligent troubleshooting assistance**

@@ -1,53 +1,163 @@
 # outlook_login.py
 import os
-from playwright.sync_api import sync_playwright
+import logging
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+from credential_manager import get_outlook_credentials
 
-def automate_outlook_login(email, password):
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-        # Step 1: Go to Microsoft login
-        page.goto("https://login.microsoftonline.com/")
+class OutlookLoginError(Exception):
+    """Custom exception for Outlook login failures"""
+    pass
 
-        # Step 2: Fill in email
-        page.get_by_placeholder("Email, phone, or Skype").fill(email)
-        page.get_by_role("button", name="Next").click()
+class OutlookLogin:
+    """Class to handle Outlook automation"""
+    
+    def __init__(self):
+        self.browser = None
+        self.context = None
+        self.page = None
 
-        # Step 3: Wait for Aston login redirect
-        page.wait_for_selector("input[type='password']", timeout=10000)
-
-        # Step 4: Fill in password
-        page.fill("input[type='password']", password)
-
-        # Step 5: Click "Sign in"
+    async def handle_request(self, message: str, action: str = None) -> dict:
+        """Handle incoming requests for Outlook operations"""
         try:
-            page.get_by_role("button", name="Sign in").click()
-        except:
-            page.locator("input[type='submit']").click()
+            if action == "login":
+                success = self.login()
+                return {
+                    "response": "Login successful" if success else "Login failed",
+                    "available_actions": ["check_emails", "send_email", "logout"]
+                }
+            elif action == "check_emails":
+                return {
+                    "response": "Email check not implemented yet",
+                    "available_actions": ["login", "send_email", "logout"]
+                }
+            elif action == "send_email":
+                return {
+                    "response": "Email sending not implemented yet",
+                    "available_actions": ["login", "check_emails", "logout"]
+                }
+            elif action == "logout":
+                return {
+                    "response": "Logout not implemented yet",
+                    "available_actions": ["login"]
+                }
+            else:
+                return {
+                    "response": "Unknown action",
+                    "available_actions": ["login", "check_emails", "send_email", "logout"]
+                }
+        except Exception as e:
+            return {"response": f"Error: {str(e)}", "available_actions": ["login"]}
 
-        # Step 6: Check for login error
-        if page.locator("text=The password is incorrect").is_visible():
-            print("❌ Login failed: Incorrect password.")
-            page.screenshot(path="login_error.png")
-            return
+    def login(self, email=None, password=None) -> bool:
+        """Login to Outlook Web Access"""
+        if email is None or password is None:
+            email, password = get_outlook_credentials()
+        
+        if not email or not password:
+            raise OutlookLoginError("Missing credentials")
+        
+        try:
+            with sync_playwright() as p:
+                self.browser = p.chromium.launch(
+                    headless=False,
+                    args=['--disable-blink-features=AutomationControlled']
+                )
+                
+                self.context = self.browser.new_context(
+                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                )
+                self.page = self.context.new_page()
+                
+                # Navigate to login page
+                try:
+                    self.page.goto("https://login.microsoftonline.com/", wait_until="networkidle", timeout=30000)
+                except PlaywrightTimeoutError:
+                    raise OutlookLoginError("Failed to load login page")
+                
+                # Enter email
+                email_input = self.page.get_by_placeholder("Email, phone, or Skype")
+                email_input.fill(email)
+                self.page.get_by_role("button", name="Next").click()
+                
+                # Wait for password field
+                try:
+                    self.page.wait_for_selector("input[type='password']", timeout=15000)
+                except PlaywrightTimeoutError:
+                    if "outlook.office.com" in self.page.url:
+                        return True
+                    raise OutlookLoginError("Password field not found")
+                
+                # Enter password
+                password_input = self.page.locator("input[type='password']")
+                password_input.fill(password)
+                
+                # Try different sign-in buttons
+                for selector in ["button:has-text('Sign in')", "input[type='submit']", "input[value='Sign in']"]:
+                    try:
+                        self.page.locator(selector).click(timeout=2000)
+                        break
+                    except:
+                        continue
+                else:
+                    raise OutlookLoginError("Could not find sign-in button")
+                
+                # Check for errors
+                self.page.wait_for_timeout(3000)
+                error_selectors = [
+                    "text=incorrect", "text=Sign-in error", "[data-testid='error']"
+                ]
+                for selector in error_selectors:
+                    if self.page.locator(selector).is_visible():
+                        raise OutlookLoginError("Login failed: Incorrect credentials")
+                
+                # Handle MFA if needed
+                self.page.wait_for_timeout(5000)
+                mfa_selectors = [
+                    "text=Verify your identity",
+                    "text=More information required",
+                    "text=Help us protect your account"
+                ]
+                for selector in mfa_selectors:
+                    if self.page.locator(selector).is_visible():
+                        input("Complete MFA verification and press Enter...")
+                        break
+                
+                # Navigate to Outlook
+                try:
+                    self.page.goto("https://outlook.office.com/mail/", wait_until="networkidle", timeout=30000)
+                    self.page.wait_for_selector("text=Inbox", timeout=15000)
+                    return True
+                except:
+                    raise OutlookLoginError("Failed to load Outlook inbox")
+                
+        except Exception as e:
+            raise OutlookLoginError(f"Login failed: {str(e)}")
+        finally:
+            if self.browser:
+                self.browser.close()
 
-        # Step 7: Wait for login to complete
-        page.wait_for_timeout(5000)
-
-        # Step 8: Force navigation to Outlook inbox
-        page.goto("https://outlook.office.com/mail/")
-        page.wait_for_selector("text=Inbox", timeout=10000)
-        page.screenshot(path="inbox_forced.png")
-        print("✅ Outlook inbox loaded at:", page.url)
-
-        # ✅ Keep browser open by pausing the script
-        input("🟢 Browser will remain open. Press Enter to close...")
-
-        # Optional: close browser only after manual confirmation
-        browser.close()
+def test_login():
+    """Test function to verify login functionality"""
+    outlook = OutlookLogin()
+    try:
+        result = outlook.login()
+        if result:
+            print("Login test successful")
+        return result
+    except OutlookLoginError as e:
+        print(f"Login test failed: {e}")
+        return False
+    except Exception as e:
+        print(f"Unexpected error in test: {e}")
+        return False
 
 if __name__ == "__main__":
-    email = os.getenv("OUTLOOK_EMAIL", "240375096@aston.ac.uk")
-    password = os.getenv("OUTLOOK_PASSWORD", "Den8lash618")
-    automate_outlook_login(email, password)
+    try:
+        outlook = OutlookLogin()
+        outlook.login()
+    except OutlookLoginError as e:
+        logger.error(f"Login failed: {e}")
+        exit(1)
