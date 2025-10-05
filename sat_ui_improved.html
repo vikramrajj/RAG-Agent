@@ -1226,6 +1226,81 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--slate-400);
         }
+
+        /* Text-to-Speech Control */
+        .tts-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tts-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .tts-toggle-btn:hover {
+            background: var(--accent-purple);
+            transform: translateY(-1px);
+        }
+
+        .tts-toggle-btn.disabled {
+            background: var(--slate-300);
+            opacity: 0.6;
+        }
+
+        .tts-icon {
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .tts-toggle-btn.disabled .tts-icon {
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .tts-speaking .tts-icon {
+            animation: speaking 0.5s infinite;
+        }
+
+        @keyframes speaking {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .message-speak-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .message-speak-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .message-speak-btn.speaking {
+            opacity: 1;
+            animation: speaking 0.5s infinite;
+        }
     </style>
 </head>
 
@@ -1292,6 +1367,14 @@
                             <option value="browser_use">Browser Use</option>
                             <option value="rag_only">RAG Only</option>
                         </select>
+                    </div>
+
+                    <!-- Text-to-Speech Toggle -->
+                    <div class="tts-control">
+                        <button class="tts-toggle-btn" id="ttsToggle" onclick="toggleTTS()" title="Toggle Text-to-Speech">
+                            <span class="tts-icon" id="ttsIcon">🔊</span>
+                            <span class="tts-label" id="ttsLabel">Voice: ON</span>
+                        </button>
                     </div>
 
                     <div class="response-time">
@@ -1444,7 +1527,12 @@
             idleTimer: null,
             // Model and mode configuration
             selectedModel: 'mistral',
-            selectedMode: 'smart'
+            selectedMode: 'smart',
+            // Text-to-Speech configuration
+            ttsEnabled: true,
+            isSpeaking: false,
+            speechSynthesis: window.speechSynthesis,
+            currentUtterance: null
         };
 
         // ============================================
@@ -1735,7 +1823,13 @@
                 removeTypingIndicator();
 
                 // Add agent response with route information
-                addMessage('agent', data.content || data.response, data.route, data.confidence);
+                const messageContent = data.content || data.response;
+                addMessage('agent', messageContent, data.route, data.confidence);
+
+                // Speak the response if TTS is enabled
+                if (state.ttsEnabled) {
+                    speakText(messageContent);
+                }
 
             } catch (error) {
                 removeTypingIndicator();
@@ -1786,6 +1880,7 @@
                         ${routeBadge}
                         <span class="message-time">${time}</span>
                         <div class="message-actions">
+                            ${sender === 'agent' ? `<button class="message-speak-btn" onclick="speakMessage(this)" title="Speak message">🔊</button>` : ''}
                             <button class="message-action-btn" onclick="copyMessage(this)" title="Copy">
                                 📋
                             </button>
@@ -2082,6 +2177,113 @@
                 btn.textContent = 'Copied!';
                 setTimeout(() => btn.textContent = 'Copy', 2000);
             });
+        }
+
+        // ============================================
+        // TEXT-TO-SPEECH FUNCTIONS
+        // ============================================
+        function toggleTTS() {
+            state.ttsEnabled = !state.ttsEnabled;
+            const ttsBtn = document.getElementById('ttsToggle');
+            const ttsIcon = document.getElementById('ttsIcon');
+            const ttsLabel = document.getElementById('ttsLabel');
+
+            if (state.ttsEnabled) {
+                ttsBtn.classList.remove('disabled');
+                ttsIcon.textContent = '🔊';
+                ttsLabel.textContent = 'Voice: ON';
+                showToast('🔊 Text-to-Speech enabled', 'success');
+            } else {
+                ttsBtn.classList.add('disabled');
+                ttsIcon.textContent = '🔇';
+                ttsLabel.textContent = 'Voice: OFF';
+                // Stop any ongoing speech
+                if (state.isSpeaking) {
+                    state.speechSynthesis.cancel();
+                    state.isSpeaking = false;
+                }
+                showToast('🔇 Text-to-Speech disabled', 'info');
+            }
+        }
+
+        function speakText(text) {
+            if (!state.ttsEnabled) return;
+
+            // Stop any ongoing speech
+            if (state.isSpeaking) {
+                state.speechSynthesis.cancel();
+            }
+
+            // Clean text for better speech
+            let cleanText = text
+                .replace(/```[\s\S]*?```/g, 'code block')
+                .replace(/`[^`]+`/g, 'code')
+                .replace(/\*\*([^*]+)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/#{1,6}\s+/g, '')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/[🔊🔇📋✅❌🎓👤💬🔍📝✍️🧮📚🌐📧🤖]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!cleanText || cleanText.length === 0) return;
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'en-US';
+
+            // Update UI while speaking
+            utterance.onstart = () => {
+                state.isSpeaking = true;
+                const ttsToggle = document.getElementById('ttsToggle');
+                if (ttsToggle) ttsToggle.classList.add('tts-speaking');
+            };
+
+            utterance.onend = () => {
+                state.isSpeaking = false;
+                const ttsToggle = document.getElementById('ttsToggle');
+                if (ttsToggle) ttsToggle.classList.remove('tts-speaking');
+            };
+
+            utterance.onerror = (event) => {
+                console.error('Speech synthesis error:', event);
+                state.isSpeaking = false;
+                const ttsToggle = document.getElementById('ttsToggle');
+                if (ttsToggle) ttsToggle.classList.remove('tts-speaking');
+            };
+
+            state.currentUtterance = utterance;
+            state.speechSynthesis.speak(utterance);
+        }
+
+        function speakMessage(btn) {
+            const messageBody = btn.closest('.message-content').querySelector('.message-body');
+            const text = messageBody.innerText;
+
+            // Toggle speaking for this message
+            if (state.isSpeaking && btn.classList.contains('speaking')) {
+                state.speechSynthesis.cancel();
+                btn.classList.remove('speaking');
+                state.isSpeaking = false;
+            } else {
+                // Stop any other speaking
+                document.querySelectorAll('.message-speak-btn.speaking').forEach(b => {
+                    b.classList.remove('speaking');
+                });
+                
+                btn.classList.add('speaking');
+                speakText(text);
+
+                // Remove speaking class when done
+                if (state.currentUtterance) {
+                    state.currentUtterance.onend = () => {
+                        btn.classList.remove('speaking');
+                        state.isSpeaking = false;
+                    };
+                }
+            }
         }
 
         // ============================================
