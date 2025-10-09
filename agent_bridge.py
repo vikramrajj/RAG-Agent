@@ -71,6 +71,16 @@ except Exception as e:
     RouteDestination = None
     execute_web_task = None
 
+# Import Windows automation wrapper
+try:
+    from windows_use_wrapper import WindowsUseWrapper, get_windows_wrapper
+    WINDOWS_AUTOMATION_AVAILABLE = True
+    logging.info("Windows automation wrapper loaded")
+except Exception as e:
+    logging.warning(f"Windows automation not available: {e}")
+    WINDOWS_AUTOMATION_AVAILABLE = False
+    get_windows_wrapper = None
+
 # Import lightweight model management
 try:
     from model_manager import get_model_manager, load_model as load_lightweight_model
@@ -507,6 +517,63 @@ async def chat():
             confidence = routing_decision['confidence']
             
             logger.info(f"Smart routing → {destination} (confidence: {confidence:.2f})")
+            
+            # Route 0: Windows automation for desktop tasks (simple keyword detection)
+            # Detect Windows-specific tasks before other routing
+            windows_keywords = ['open calculator', 'open notepad', 'open file explorer', 
+                               'launch', 'open settings', 'control panel', 'task manager',
+                               'minimize', 'maximize', 'close window']
+            
+            if any(keyword in message.lower() for keyword in windows_keywords):
+                if WINDOWS_AUTOMATION_AVAILABLE:
+                    try:
+                        logger.info("Executing Windows automation task...")
+                        windows_wrapper = get_windows_wrapper()
+                        result = windows_wrapper.execute_task(message)
+                        
+                        if result['success']:
+                            return jsonify({
+                                'response': result.get('result', result['message']),
+                                'content': result.get('result', result['message']),
+                                'type': 'windows_automation',
+                                'route': 'windows_use',
+                                'confidence': 0.9,  # High confidence for keyword matches
+                                'metadata': {
+                                    'request_id': request_id,
+                                    'timestamp': datetime.now(timezone.utc).isoformat()
+                                }
+                            })
+                        else:
+                            error_msg = result.get('error', 'Windows automation failed')
+                            logger.error(f"Windows automation failed: {error_msg}")
+                            return jsonify({
+                                'response': result['message'],
+                                'content': result['message'],
+                                'type': 'windows_automation_error',
+                                'route': 'windows_use',
+                                'confidence': 0.9,
+                                'metadata': {
+                                    'request_id': request_id,
+                                    'timestamp': datetime.now(timezone.utc).isoformat(),
+                                    'error': error_msg
+                                }
+                            })
+                    except Exception as e:
+                        logger.error(f"Windows automation error: {e}", exc_info=True)
+                        return jsonify({
+                            'response': f"Windows automation encountered an exception: {str(e)}",
+                            'content': f"Failed to execute Windows task. Exception: {str(e)}",
+                            'type': 'windows_automation_error',
+                            'route': 'windows_use',
+                            'confidence': 0.9,
+                            'metadata': {
+                                'request_id': request_id,
+                                'timestamp': datetime.now(timezone.utc).isoformat(),
+                                'error': str(e)
+                            }
+                        })
+                else:
+                    logger.warning("Windows automation not available")
             
             # Route 1: Browser-use for shopping/web automation
             if destination == 'browser_use':
