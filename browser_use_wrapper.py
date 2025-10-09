@@ -119,10 +119,11 @@ class BrowserUseWrapper:
             logger.info("Created fresh browser instance for task")
             
             # Create Gemini LLM instance using browser-use's ChatGoogle
+            # Using gemini-2.0-flash-exp (higher quota than other exp models)
             llm = ChatGoogle(
                 model="gemini-2.0-flash-exp",
                 api_key=self.gemini_api_key,
-                temperature=0.7
+                temperature=0.5
             )
             
             # Create browser agent with browser_session parameter and optimized settings
@@ -131,10 +132,8 @@ class BrowserUseWrapper:
                 llm=llm,
                 browser_session=browser_instance,
                 use_vision=True,  # Enable vision to see the page better
-                max_actions_per_step=15,  # Allow more actions per step (increased for thorough extraction)
-                max_failures=5,  # Allow more retries
-                use_thinking=True,  # Enable thinking mode for better reasoning
-                flash_mode=False,  # Disable flash mode for more thorough analysis
+                max_actions_per_step=10,  # Allow multiple actions per step
+                max_failures=3,  # Allow retries
             )
             
             logger.info(f"Starting browser automation task: {task}")
@@ -160,6 +159,17 @@ class BrowserUseWrapper:
             
         except Exception as e:
             logger.error(f"Browser automation failed: {e}", exc_info=True)
+            
+            # Check for quota exceeded error
+            error_str = str(e)
+            if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str or 'quota' in error_str.lower():
+                return {
+                    'success': False,
+                    'error': 'Gemini API quota exceeded',
+                    'task': task,
+                    'message': '⚠️ Daily API quota reached (50 requests/day). The quota resets every 24 hours. Please try again later or upgrade to a paid plan for unlimited usage. Visit: https://ai.google.dev/pricing'
+                }
+            
             return {
                 'success': False,
                 'error': str(e),
@@ -168,17 +178,13 @@ class BrowserUseWrapper:
             }
         
         finally:
-            # Close the agent to free resources, but keep browser open
+            # Don't close agent or browser - keep everything open
+            # The browser window and session remain active for user interaction
             if agent_instance:
-                try:
-                    # Close agent without closing browser
-                    await agent_instance.close()
-                    logger.info("Agent closed, browser remains open")
-                except Exception as e:
-                    logger.warning(f"Error closing agent: {e}")
+                logger.info("Agent and browser left open for user review")
             
-            # Don't close browser_instance - it stays open for user interaction
-            # The browser window will remain visible and functional
+            # Note: Browser stays open with keep_alive=True
+            # User can manually close the browser window when done
     
     async def shop_online(
         self, 
@@ -336,44 +342,83 @@ IMPORTANT: Return actual product information from Tesco."""
             return "No results found."
         
         results = []
+        actions_taken = []
         
-        # Extract content from all steps, not just the last one
+        # Extract content and actions from all steps
         for i, step in enumerate(history.history):
-            if step.result:
+            # Log what actions were taken
+            if hasattr(step, 'model_output') and step.model_output:
+                if hasattr(step.model_output, 'action'):
+                    action = step.model_output.action
+                    action_name = action.__class__.__name__ if hasattr(action, '__class__') else str(action)
+                    actions_taken.append(f"Step {i+1}: {action_name}")
+            
+            # Extract content from step results
+            if hasattr(step, 'result') and step.result:
                 for action_result in step.result:
-                    if action_result.extracted_content:
+                    if hasattr(action_result, 'extracted_content') and action_result.extracted_content:
                         content = action_result.extracted_content.strip()
-                        if content and content not in results:
+                        if content and len(content) > 10 and content not in results:
                             results.append(content)
-        
-        # Get final result if task completed
-        if history.is_done():
-            final_step = history.history[-1]
-            if hasattr(final_step, 'model_output') and final_step.model_output:
-                # Try to get the final answer/summary from model output
-                if hasattr(final_step.model_output, 'current_state') and hasattr(final_step.model_output.current_state, 'summary'):
-                    summary = final_step.model_output.current_state.summary
-                    if summary and summary not in results:
-                        results.append(summary)
-        
-        # If still no results, provide more detailed summary
-        if not results:
-            summary_parts = []
-            summary_parts.append(f"Browser automation completed {len(history.history)} steps.")
-            
-            # Add final URL if available
-            if history.history:
-                final_url = history.history[-1].state.url
-                if final_url:
-                    summary_parts.append(f"\nFinal page: {final_url}")
                     
-                # Try to get page title or other info
-                if hasattr(history.history[-1].state, 'items'):
-                    summary_parts.append(f"\nFound {len(history.history[-1].state.items)} elements on page.")
-            
-            results.append("\n".join(summary_parts))
+                    # Also check for error messages
+                    if hasattr(action_result, 'error') and action_result.error:
+                        results.append(f"⚠️ Error encountered: {action_result.error}")
         
-        return "\n\n".join(results)
+        # Get final result from model output
+        if history.is_done() and history.history:
+            final_step = history.history[-1]
+            
+            # Try multiple ways to get the final output
+            if hasattr(final_step, 'model_output') and final_step.model_output:
+                model_output = final_step.model_output
+                
+                # Check for completion message
+                if hasattr(model_output, 'done') and hasattr(model_output, 'done_reason'):
+                    if model_output.done_reason:
+                        results.append(f"✅ Task completed: {model_output.done_reason}")
+                
+                # Check for current state summary
+                if hasattr(model_output, 'current_state'):
+                    state = model_output.current_state
+                    if hasattr(state, 'summary') and state.summary:
+                        results.append(f"📋 Summary: {state.summary}")
+                    if hasattr(state, 'evaluation_previous_goal') and state.evaluation_previous_goal:
+                        results.append(f"📊 Evaluation: {state.evaluation_previous_goal}")
+            
+            # Get final URL and page info
+            if hasattr(final_step, 'state'):
+                final_state = final_step.state
+                final_url = getattr(final_state, 'url', 'unknown')
+                
+                if final_url and final_url != 'about:blank':
+                    results.append(f"🌐 Final page: {final_url}")
+                    
+                    # Try to get page content or title
+                    if hasattr(final_state, 'items') and final_state.items:
+                        results.append(f"📄 Page has {len(final_state.items)} interactive elements")
+        
+        # If we got meaningful results, return them
+        if results:
+            return "\n\n".join(results)
+        
+        # Fallback: provide activity summary
+        summary_parts = []
+        summary_parts.append(f"🤖 Browser automation completed {len(history.history)} steps")
+        
+        if actions_taken:
+            summary_parts.append(f"\n📝 Actions taken:\n" + "\n".join(actions_taken[-5:]))  # Last 5 actions
+        
+        if history.history:
+            final_url = getattr(history.history[-1].state, 'url', 'unknown')
+            if final_url != 'about:blank':
+                summary_parts.append(f"\n🌐 Final page: {final_url}")
+            else:
+                summary_parts.append(f"\n⚠️ Browser closed or navigation incomplete")
+        
+        summary_parts.append(f"\n💡 Tip: The browser window should still be open for you to view the results")
+        
+        return "\n".join(summary_parts)
     
     async def close(self):
         """Close the browser and cleanup resources"""
@@ -428,9 +473,10 @@ async def execute_web_task(task: str, task_type: str = "search") -> Dict[str, An
         # Extract website (amazon, asda, tesco, walmart, etc.)
         website = None
         task_lower = task.lower()
-        if 'amazon.in' in task_lower:
+        # Check for Amazon India variations
+        if 'amazon.in' in task_lower or 'amazon dot in' in task_lower or 'amazon india' in task_lower:
             website = 'amazon.in'
-        elif 'amazon.com' in task_lower or 'amazon' in task_lower:
+        elif 'amazon.com' in task_lower or 'amazon dot com' in task_lower or 'amazon' in task_lower:
             website = 'amazon.com'
         elif 'asda' in task_lower:
             website = 'asda.com'
@@ -453,16 +499,22 @@ async def execute_web_task(task: str, task_type: str = "search") -> Dict[str, An
         
         # Extract product name (remove common prefixes and price info)
         product = task.lower()
+        # Remove "open" command
+        product = re.sub(r'\b(open)\s+', '', product, flags=re.IGNORECASE).strip()
         # Remove action words including "search for", "find", etc.
         product = re.sub(r'\b(search|find|look|get|buy)\s+(for\s+)?', '', product, flags=re.IGNORECASE).strip()
         # Remove "for" at the beginning if left over
         product = re.sub(r'^\s*for\s+', '', product, flags=re.IGNORECASE).strip()
-        # Remove website references
-        product = re.sub(r'\bon\s+amazon(\.in|\.com)?\b', '', product, flags=re.IGNORECASE).strip()
+        # Remove website references (including "dot in" and "dot com" variations)
+        product = re.sub(r'\b(on\s+)?amazon(\s+dot\s+in|\s+dot\s+com|\.in|\.com)?\b', '', product, flags=re.IGNORECASE).strip()
+        product = re.sub(r'\b(on\s+)?(asda|tesco|walmart|target)(\s+dot\s+com|\.com)?\b', '', product, flags=re.IGNORECASE).strip()
+        # Remove "and" at the beginning if left over
+        product = re.sub(r'^\s*and\s+', '', product, flags=re.IGNORECASE).strip()
         # Remove price information
         product = re.sub(r'\bunder\s+\d+k?\s*(inr|rupees|rs)?\b', '', product, flags=re.IGNORECASE).strip()
-        # Final cleanup - remove extra spaces
-        product = ' '.join(product.split())
+        # Final cleanup - remove extra spaces and periods
+        product = re.sub(r'\s+', ' ', product).strip()
+        product = product.replace(' .', '').strip()
         
         return await wrapper.shop_online(product, max_price=max_price, website=website)
     elif task_type == "search":

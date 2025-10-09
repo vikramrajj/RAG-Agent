@@ -8,7 +8,7 @@ from flask import Flask, request, send_from_directory, jsonify, session
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from voice_handler import VoiceHandler
+# from voice_handler import VoiceHandler  # Temporarily disabled due to heavy dependencies
 from browser_automation import BrowserAutomation
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
@@ -614,9 +614,14 @@ async def chat():
                 
                 # Use Mistral (or selected model) for chat
                 import time
+                from datetime import datetime
                 start_time = time.time()
                 
-                system_prompt = "You are SAT (Student Assistance Tool), a helpful AI assistant powered by Mistral. Provide clear, accurate, and helpful responses to help students learn and solve problems."
+                # Get current date for system prompt
+                current_date = datetime.now().strftime("%A, %B %d, %Y")
+                current_time = datetime.now().strftime("%I:%M %p")
+                
+                system_prompt = f"You are SAT (Support Assistance Tool), a helpful technical support AI assistant powered by Mistral. Today's date is {current_date} and the current time is {current_time}. Provide clear, accurate, and helpful responses for technical troubleshooting, especially for Microsoft Office products (Outlook, Teams), network issues, and system diagnostics. When asked about the current date or time, always refer to {current_date} at {current_time}."
                 response = manager.chat(
                     message=message,
                     conversation_history=context,

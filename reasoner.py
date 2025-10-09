@@ -139,10 +139,10 @@ class TroubleshootingPlan:
     estimated_total_time: str = "10-20 minutes"
 
 class EnhancedReasoner(HealthCheckManager):
-    def __init__(self, retriever=None, model_name=RAG_CONFIG.get('model_name', 'llama3')):
+    def __init__(self, retriever, model_name=RAG_CONFIG.get('model_name', 'llama3')):
         super().__init__()
         self.model = ollama.Client()
-        self._retriever = retriever  # Store as private, lazy-load when needed
+        self.retriever = retriever
         self.model_name = model_name
         self.llm = OllamaLLM(model=self.model_name)
         self.cache = cache
@@ -181,15 +181,6 @@ class EnhancedReasoner(HealthCheckManager):
         ]
         
         logger.info(f"Enhanced reasoner initialized with model: {model_name}")
-    
-    @property
-    def retriever(self):
-        """Lazy-load retriever only when needed for RAG queries"""
-        if self._retriever is None:
-            from retriever import get_retriever
-            logger.info("Lazy-loading retriever for RAG query")
-            self._retriever = get_retriever()
-        return self._retriever
     
     def classify_query(self, message: str) -> Tuple[str, Dict]:
         prompt = f"""Classify the following message into one category and provide relevant metadata:

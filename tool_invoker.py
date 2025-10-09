@@ -122,12 +122,8 @@ class ToolInvoker:
         start_time = time.time()
         
         try:
-            # SaRA path - check config first, then use default location
-            sara_path = getattr(self.config.paths, 'sara_path', None)
-            if not sara_path:
-                # Default to user's Downloads folder
-                sara_path = os.path.expanduser(r"~\Downloads\SaRA_17_01_2465_000\Microsoft.Sara.exe")
-                logger.info(f"Using default SaRA path: {sara_path}")
+            # Get SaRA path from configuration
+            sara_path = self.config.paths.sara_path
             
             # Validate SaRA executable exists
             if not Path(sara_path).exists():
