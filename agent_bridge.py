@@ -490,6 +490,8 @@ async def chat():
         message = data.get('message', '').strip()
         context = data.get('context', [])
         browser_mode = data.get('browser_mode', False)
+        force_browser = data.get('force_browser', False)
+        force_windows = data.get('force_windows', False)
         model_name = data.get('model', 'mistral').strip()  # Default to Mistral
         use_smart_routing = data.get('smart_routing', True)  # Enable by default
         
@@ -506,6 +508,60 @@ async def chat():
         # Initialize routing variables (may be overridden by smart routing)
         destination = 'mistral'  # Default
         confidence = 0.0  # Default
+        
+        # ==============================================
+        # FORCE WINDOWS MODE: Always use Windows automation if requested
+        # ==============================================
+        if force_windows and WINDOWS_AUTOMATION_AVAILABLE:
+            try:
+                logger.info(f"Force Windows mode enabled - executing Windows automation task")
+                windows_wrapper = get_windows_wrapper()
+                result = windows_wrapper.execute_task(message)
+                
+                if result['success']:
+                    return jsonify({
+                        'response': result.get('result', result['message']),
+                        'content': result.get('result', result['message']),
+                        'type': 'windows_automation',
+                        'route': 'windows_use',
+                        'confidence': 1.0,  # Maximum confidence for forced mode
+                        'metadata': {
+                            'request_id': request_id,
+                            'timestamp': datetime.now(timezone.utc).isoformat(),
+                            'forced_mode': True
+                        }
+                    })
+                else:
+                    error_msg = result.get('error', 'Windows automation failed')
+                    logger.error(f"Windows automation failed: {error_msg}")
+                    return jsonify({
+                        'response': result['message'],
+                        'content': result['message'],
+                        'type': 'windows_automation_error',
+                        'route': 'windows_use',
+                        'confidence': 1.0,
+                        'metadata': {
+                            'request_id': request_id,
+                            'timestamp': datetime.now(timezone.utc).isoformat(),
+                            'error': error_msg,
+                            'forced_mode': True
+                        }
+                    })
+            except Exception as e:
+                logger.error(f"Windows automation error: {e}", exc_info=True)
+                return jsonify({
+                    'response': f"❌ Windows automation error: {str(e)}",
+                    'content': f"Failed to execute Windows task: {str(e)}",
+                    'type': 'windows_automation_error',
+                    'route': 'windows_use',
+                    'confidence': 1.0,
+                    'metadata': {
+                        'request_id': request_id,
+                        'timestamp': datetime.now(timezone.utc).isoformat(),
+                        'error': str(e),
+                        'forced_mode': True
+                    }
+                })
         
         # ==============================================
         # SMART ROUTING: Route to appropriate system

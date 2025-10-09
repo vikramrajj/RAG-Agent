@@ -1510,6 +1510,7 @@
                         <select class="mode-select" id="modeSelect" onchange="updateModeSelection()">
                             <option value="smart">Smart Routing</option>
                             <option value="browser_use">Browser Use</option>
+                            <option value="windows_use">Windows Use</option>
                             <option value="rag_only">RAG Only</option>
                         </select>
                     </div>
@@ -1558,10 +1559,12 @@
                                 <div class="quick-option-desc">Comprehensive system diagnostics</div>
                             </div>
                         </div>
-                        
+
                         <!-- Windows Automation Section -->
                         <div style="margin-top: 2rem;">
-                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">💻 Windows Automation</h3>
+                            <h3
+                                style="font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                                💻 Windows Automation</h3>
                             <div class="quick-start">
                                 <div class="quick-option" onclick="useQuickPrompt('Open Calculator')">
                                     <div class="quick-option-icon">🧮</div>
@@ -1755,6 +1758,9 @@
                     break;
                 case 'browser_use':
                     modeText = 'Browser Automation Mode';
+                    break;
+                case 'windows_use':
+                    modeText = 'Windows Automation Mode';
                     break;
                 case 'rag_only':
                     modeText = 'RAG-only Mode';
@@ -1982,6 +1988,7 @@
                 // Determine routing based on selected mode
                 const routingEnabled = state.selectedMode === 'smart';
                 const forceBrowser = state.selectedMode === 'browser_use';
+                const forceWindows = state.selectedMode === 'windows_use';
 
                 const response = await fetch('/api/bridge', {
                     method: 'POST',
@@ -1993,6 +2000,7 @@
                         model: state.selectedModel,
                         smart_routing: routingEnabled,
                         force_browser: forceBrowser,
+                        force_windows: forceWindows,
                         rag_only: state.selectedMode === 'rag_only'
                     })
                 });
