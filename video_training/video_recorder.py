@@ -97,6 +97,17 @@ class VideoRecorder:
         self._stop_flag = False
         self.frames = []
         
+        # Reset metadata for new recording
+        self.metadata = {
+            "start_time": None,
+            "end_time": None,
+            "duration": None,
+            "frame_count": 0,
+            "fps": self.fps,
+            "resolution": None,
+            "task_context": None
+        }
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.video_path = str(self.output_dir / f"{task_name}_{timestamp}.mp4")
         
