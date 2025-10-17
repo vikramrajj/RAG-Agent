@@ -1,0 +1,4 @@
+Perform these below task in their order 
+Fist %temp% from Run window by pressing windows + R key.
+Then select all files in the folder & delete them.
+The Open C:\Users\vikra\AppData\Local\Microsoft\Outlook & rename the ost file

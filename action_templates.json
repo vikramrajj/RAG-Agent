@@ -1,0 +1,510 @@
+{
+    "amazon_search": {
+        "description": "Search for products on Amazon",
+        "keywords": [
+            "search amazon",
+            "amazon search",
+            "find on amazon",
+            "look up on amazon"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://www.amazon.com"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "#twotabsearchtextbox",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "click",
+                "selector": "#nav-search-submit-button"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    },
+    "amazon_purchase": {
+        "description": "Add item to cart on Amazon (search and add first result)",
+        "keywords": [
+            "buy on amazon",
+            "purchase on amazon",
+            "order from amazon",
+            "add to cart amazon"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://www.amazon.com"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "#twotabsearchtextbox",
+                "text": "{PRODUCT}"
+            },
+            {
+                "action": "click",
+                "selector": "#nav-search-submit-button"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            },
+            {
+                "action": "click",
+                "selector": "div[data-component-type='s-search-result']:first-child a.s-link-style"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            },
+            {
+                "action": "click",
+                "selector": "#add-to-cart-button"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "PRODUCT"
+        ],
+        "type": "browser"
+    },
+    "google_search": {
+        "description": "Search Google for a query",
+        "keywords": [
+            "google",
+            "search google",
+            "google search",
+            "find on google"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://www.google.com"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "textarea[name=q]",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "press",
+                "key": "Enter"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    },
+    "youtube_search": {
+        "description": "Search for videos on YouTube",
+        "keywords": [
+            "youtube",
+            "search youtube",
+            "find video",
+            "watch on youtube"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://www.youtube.com"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "input#search",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "press",
+                "key": "Enter"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    },
+    "wikipedia_search": {
+        "description": "Search Wikipedia for a topic",
+        "keywords": [
+            "wikipedia",
+            "search wikipedia",
+            "wiki"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://en.wikipedia.org"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "input#searchInput",
+                "text": "{TOPIC}"
+            },
+            {
+                "action": "click",
+                "selector": "button[type=submit]"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "TOPIC"
+        ],
+        "type": "browser"
+    },
+    "windows_uninstall_app": {
+        "description": "Uninstall a Windows application",
+        "keywords": [
+            "uninstall",
+            "remove app",
+            "delete program",
+            "uninstall app"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "ms-settings:appsfeatures"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            },
+            {
+                "action": "search",
+                "query": "{APP_NAME}"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "click",
+                "text": "{APP_NAME}"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "click",
+                "text": "Uninstall"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "confirm"
+            }
+        ],
+        "variables": [
+            "APP_NAME"
+        ],
+        "type": "windows"
+    },
+    "windows_open_notepad": {
+        "description": "Open Notepad and optionally type text",
+        "keywords": [
+            "open notepad",
+            "launch notepad",
+            "start notepad"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "notepad.exe"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            }
+        ],
+        "variables": [],
+        "type": "windows"
+    },
+    "windows_open_calculator": {
+        "description": "Open Windows Calculator",
+        "keywords": [
+            "open calculator",
+            "launch calculator",
+            "start calculator",
+            "calc"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "calc.exe"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            }
+        ],
+        "variables": [],
+        "type": "windows"
+    },
+    "windows_file_explorer": {
+        "description": "Open File Explorer to a specific location",
+        "keywords": [
+            "open file explorer",
+            "open folder",
+            "browse files"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "explorer.exe"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            }
+        ],
+        "variables": [],
+        "type": "windows"
+    },
+    "windows_settings_display": {
+        "description": "Open Windows Display Settings",
+        "keywords": [
+            "display settings",
+            "screen settings",
+            "change display"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "ms-settings:display"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [],
+        "type": "windows"
+    },
+    "windows_settings_personalization": {
+        "description": "Open Windows Personalization Settings",
+        "keywords": [
+            "personalization",
+            "change theme",
+            "customize windows"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "ms-settings:personalization"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [],
+        "type": "windows"
+    },
+    "windows_task_manager": {
+        "description": "Open Windows Task Manager",
+        "keywords": [
+            "task manager",
+            "open task manager",
+            "processes"
+        ],
+        "steps": [
+            {
+                "action": "open",
+                "app": "taskmgr.exe"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            }
+        ],
+        "variables": [],
+        "type": "windows"
+    },
+    "github_search_repos": {
+        "description": "Search for repositories on GitHub",
+        "keywords": [
+            "github search",
+            "search github",
+            "find repo",
+            "github repository"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://github.com/search"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "input[name=q]",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "press",
+                "key": "Enter"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    },
+    "linkedin_search": {
+        "description": "Search for people or jobs on LinkedIn",
+        "keywords": [
+            "linkedin search",
+            "search linkedin",
+            "find on linkedin"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://www.linkedin.com"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "input.search-global-typeahead__input",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "press",
+                "key": "Enter"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    },
+    "twitter_search": {
+        "description": "Search for tweets on Twitter/X",
+        "keywords": [
+            "twitter search",
+            "search twitter",
+            "x search",
+            "search x"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://twitter.com/search"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "input[data-testid='SearchBox_Search_Input']",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "press",
+                "key": "Enter"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    },
+    "reddit_search": {
+        "description": "Search for posts on Reddit",
+        "keywords": [
+            "reddit search",
+            "search reddit",
+            "find on reddit"
+        ],
+        "steps": [
+            {
+                "action": "goto",
+                "url": "https://www.reddit.com"
+            },
+            {
+                "action": "wait",
+                "seconds": 1
+            },
+            {
+                "action": "type",
+                "selector": "input[name=q]",
+                "text": "{QUERY}"
+            },
+            {
+                "action": "press",
+                "key": "Enter"
+            },
+            {
+                "action": "wait",
+                "seconds": 2
+            }
+        ],
+        "variables": [
+            "QUERY"
+        ],
+        "type": "browser"
+    }
+}

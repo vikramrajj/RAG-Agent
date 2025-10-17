@@ -7,7 +7,7 @@ import os
 import logging
 from typing import Dict, Any, Optional
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
-from windows_use.agent import Agent, Browser
+from windows_use.agent import Agent
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,11 @@ class WindowsUseWrapper:
         Args:
             gemini_api_key: Google Gemini API key (optional, uses env var if not provided)
         """
-        self.gemini_api_key = gemini_api_key or os.getenv("GEMINI_API_KEY")
+        # Check both GEMINI_API_KEY and GOOGLE_API_KEY (same as browser_use_wrapper)
+        self.gemini_api_key = gemini_api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         
         if not self.gemini_api_key:
-            raise ValueError("GEMINI_API_KEY not found. Please set it in environment or pass it.")
+            raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY not found. Please set it in environment or pass it.")
         
         # Initialize LLM (same model as browser-use for consistency)
         self.llm = ChatGoogleGenerativeAI(
@@ -34,11 +35,11 @@ class WindowsUseWrapper:
         )
         
         # Initialize Windows agent
+        # windows_use Agent parameters: instructions, additional_tools, llm, max_steps, use_vision
         self.agent = Agent(
             llm=self.llm,
-            browser=Browser.EDGE,  # Browser type for web-related tasks
             use_vision=False,      # Disable vision for faster performance
-            auto_minimize=True     # Minimize windows automatically
+            max_steps=100          # Maximum steps for task execution
         )
         
         logger.info("Windows automation initialized with Gemini API")
@@ -57,13 +58,14 @@ class WindowsUseWrapper:
         
         try:
             # Execute the task using the agent
-            result = self.agent.print_response(query=task)
+            # windows_use Agent.invoke() executes the task
+            result = self.agent.invoke(query=task)
             
             logger.info(f"Windows task completed: {task}")
             
             return {
                 'success': True,
-                'result': result,
+                'result': str(result) if result else f"Executed: {task}",
                 'message': f"✅ Task completed: {task}"
             }
             

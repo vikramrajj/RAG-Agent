@@ -3,7 +3,9 @@
         "sat_ui.html",
         "agent_bridge.py",
         "browser_integration.py",
-        "launch_browser_webui.py"
+        "launch_browser_webui.py",
+        "action_sequence_manager.py",
+        "minimal_sat_server.py"
     ],
     "ignore": [
         "reasoner.py",

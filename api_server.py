@@ -52,29 +52,130 @@ async def handle_message(data: dict):
     message = data.get("message", "").strip()
     smart_routing = data.get("smart_routing", True)
     force_browser = data.get("force_browser", False)
+    force_windows = data.get("force_windows", False)
     rag_only = data.get("rag_only", False)
     model_name = data.get("model", "mistral")
     context = data.get("context", [])
     
-    logger.info(f"API Bridge called - message: {message[:50]}, smart_routing: {smart_routing}, force_browser: {force_browser}")
+    logger.info(f"API Bridge called - message: {message[:50]}, smart_routing: {smart_routing}, force_browser: {force_browser}, force_windows: {force_windows}")
+    
+    # Handle forced Windows automation mode
+    if force_windows:
+        try:
+            logger.info(f"Force Windows mode enabled - executing Windows automation")
+            from windows_use_wrapper import WindowsUseWrapper, get_windows_wrapper
+            
+            windows_wrapper = get_windows_wrapper()
+            result = windows_wrapper.execute_task(message)
+            
+            if result['success']:
+                return JSONResponse(content={
+                    'type': 'windows_automation',
+                    'content': result.get('result', result['message']),
+                    'response': result.get('result', result['message']),
+                    'route': 'windows_use',
+                    'confidence': 1.0,
+                    'metadata': {
+                        'forced_mode': True,
+                        'timestamp': result.get('timestamp', '')
+                    }
+                })
+            else:
+                error_msg = result.get('error', 'Windows automation failed')
+                logger.error(f"Windows automation failed: {error_msg}")
+                return JSONResponse(content={
+                    'type': 'windows_automation_error',
+                    'content': result['message'],
+                    'response': result['message'],
+                    'route': 'windows_use',
+                    'confidence': 1.0,
+                    'metadata': {
+                        'forced_mode': True,
+                        'error': error_msg
+                    }
+                })
+        except ImportError as ie:
+            logger.error(f"Could not import windows_use_wrapper: {ie}")
+            return JSONResponse(content={
+                'type': 'error',
+                'content': f"Windows automation not available: {str(ie)}",
+                'metadata': {'error': str(ie)}
+            })
+        except Exception as e:
+            logger.error(f"Windows automation error: {e}", exc_info=True)
+            return JSONResponse(content={
+                'type': 'windows_automation_error',
+                'content': f"❌ Windows automation error: {str(e)}",
+                'response': f"Failed to execute Windows task: {str(e)}",
+                'route': 'windows_use',
+                'confidence': 1.0,
+                'metadata': {
+                    'forced_mode': True,
+                    'error': str(e)
+                }
+            })
     
     # If smart routing is enabled, process through reasoner
     if smart_routing:
         try:
             logger.info(f"Processing message with smart routing: {message[:50]}...")
             
-            # Lazy-load reasoner on first use (for non-browser queries)
-            reasoner = get_reasoner()
-            
-            # First: Quick keyword-based detection for browser queries (no LLM needed)
-            browser_keywords = ['open', 'search', 'find', 'buy', 'shop', 'asda', 'tesco', 'amazon', 'walmart', 'target', 'browse', 'look for', 'purchase']
+            # PRIORITY 1: Check for Windows automation keywords FIRST (before browser keywords)
+            # Windows apps: calculator, notepad, file explorer, settings, control panel, etc.
+            windows_keywords = ['open calculator', 'open notepad', 'open file explorer', 
+                               'launch calculator', 'launch notepad', 'launch file explorer',
+                               'open settings', 'control panel', 'task manager', 'device manager',
+                               'open paint', 'launch paint', 'open cmd', 'open powershell',
+                               'minimize', 'maximize', 'close window', 'show desktop']
             message_lower = message.lower()
+            is_windows_query = any(keyword in message_lower for keyword in windows_keywords)
+            
+            if is_windows_query:
+                logger.info(f"Windows keyword detected - routing to Windows automation")
+                try:
+                    from windows_use_wrapper import get_windows_wrapper
+                    
+                    windows_wrapper = get_windows_wrapper()
+                    result = windows_wrapper.execute_task(message)
+                    
+                    if result['success']:
+                        return JSONResponse(content={
+                            'type': 'windows_automation',
+                            'content': result.get('result', result['message']),
+                            'response': result.get('result', result['message']),
+                            'route': 'windows_use',
+                            'confidence': 0.95,
+                            'metadata': {'smart_routing': True}
+                        })
+                    else:
+                        logger.warning(f"Windows automation failed: {result.get('error')}")
+                        return JSONResponse(content={
+                            'type': 'windows_automation_error',
+                            'content': result['message'],
+                            'response': result['message'],
+                            'route': 'windows_use',
+                            'confidence': 0.95,
+                            'metadata': {'error': result.get('error')}
+                        })
+                except ImportError as ie:
+                    logger.error(f"Windows automation not available: {ie}")
+                    # Fall through to browser/other routing
+                except Exception as we:
+                    logger.error(f"Windows automation error: {we}")
+                    # Fall through to browser/other routing
+            
+            # PRIORITY 2: Browser keyword detection (for web searches/shopping)
+            # Only check if NOT a Windows query
+            browser_keywords = ['search', 'google', 'find', 'buy', 'shop', 'asda', 'tesco', 'amazon', 'walmart', 'target', 'browse', 'look for', 'purchase', 'website', 'online']
             is_browser_query = any(keyword in message_lower for keyword in browser_keywords) or force_browser
             
             logger.info(f"Keyword-based browser detection: {is_browser_query}")
             
+            # Lazy-load reasoner on first use (for non-browser queries)
+            reasoner = get_reasoner()
+            
             # Check if it's a browser query - handle directly without loading RAG
-            if is_browser_query:
+            if is_browser_query and not is_windows_query:
                 # Import browser wrapper
                 try:
                     from browser_use_wrapper import execute_web_task
