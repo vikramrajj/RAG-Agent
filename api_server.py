@@ -8,12 +8,33 @@ from outlook_login import OutlookLogin
 from reasoner import EnhancedReasoner
 from retriever import get_retriever
 import logging
+import json
+
+# Phase 1: Video Recording Integration
+try:
+    from video_training.integration import (
+        setup_video_recording,
+        start_execution_recording,
+        stop_execution_recording,
+        get_recording_status
+    )
+    VIDEO_RECORDING_ENABLED = True
+except ImportError:
+    VIDEO_RECORDING_ENABLED = False
 
 logger = logging.getLogger(__name__)
+
+if not VIDEO_RECORDING_ENABLED:
+    logger.warning("video_training module not available - video recording disabled")
 
 app = FastAPI()
 agent_bridge = AgentBridge()
 tool_invoker = ToolInvoker()
+
+# Initialize video recording if available
+if VIDEO_RECORDING_ENABLED:
+    setup_video_recording()
+    logger.info("✅ Video recording initialized - Phase 1 active")
 
 # Lazy-load reasoner to avoid slow startup
 _reasoner = None
@@ -47,8 +68,45 @@ async def read_sat_legacy():
 async def get_status():
     return {"active": agent_bridge.check_status()}
 
+# Video recording wrapper for handler
+async def handle_message_with_recording(data: dict):
+    """Execute message handling and optionally record video"""
+    record_video = data.get("record_video", False)
+    video_path = None
+    
+    # Start recording if requested
+    if VIDEO_RECORDING_ENABLED and record_video:
+        task_name = data.get("message", "api_call")[:50].replace(" ", "_")
+        video_path = start_execution_recording(task_name, str(data))
+        logger.info(f"🎥 Recording started: {video_path}")
+    
+    try:
+        # Execute the main logic
+        result = await handle_message_internal(data)
+        
+        # Add video path to response if recorded
+        if VIDEO_RECORDING_ENABLED and record_video and video_path:
+            if isinstance(result, JSONResponse):
+                content = result.body
+                response_dict = json.loads(content)
+                response_dict["metadata"] = response_dict.get("metadata", {})
+                response_dict["metadata"]["video_recording"] = video_path
+                result = JSONResponse(content=response_dict)
+        
+        return result
+        
+    finally:
+        # Stop recording
+        if VIDEO_RECORDING_ENABLED and record_video:
+            metadata = stop_execution_recording()
+            logger.info(f"🎥 Recording stopped - {metadata['frame_count']} frames, {metadata['duration']:.2f}s")
+
 @app.post("/api/bridge")
 async def handle_message(data: dict):
+    """API Bridge endpoint with optional video recording"""
+    return await handle_message_with_recording(data)
+
+async def handle_message_internal(data: dict):
     message = data.get("message", "").strip()
     smart_routing = data.get("smart_routing", True)
     force_browser = data.get("force_browser", False)
