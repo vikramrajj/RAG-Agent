@@ -2,6 +2,14 @@
 
 A sophisticated Retrieval-Augmented Generation (RAG) agent designed to provide intelligent troubleshooting assistance for Microsoft Office applications. Built with modern Python frameworks and AI technologies, it combines semantic search, natural language processing, and web automation to deliver comprehensive support solutions.
 
+## 🎬 Demo Video
+
+> **Watch the full demo**: Visit our [GitHub Pages site](https://vikramrajj.github.io/RAG-Agent/) to see RAG Agent in action!
+
+[<img src="https://img.shields.io/badge/▶️_Watch_Demo-blue?style=for-the-badge&logo=youtube" alt="Watch Demo">](https://vikramrajj.github.io/RAG-Agent/)
+
+*The demo showcases smart query routing, Windows automation, web browser control, and real-time information retrieval.*
+
 ## 🚀 Features
 
 ### Core Capabilities
