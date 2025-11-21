@@ -453,5 +453,10 @@ Common issues and solutions:
 - **v2.0.0** - Complete architecture overhaul and standardization
 
 ---
+## 🎬 Demo Video
+
+[![YouTube](https://img.shields.io/badge/YouTube-Watch_Demo-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=VwiSWpLlWq8)
+
+[![Demo Thumbnail](https://img.youtube.com/vi/VwiSWpLlWq8/maxresdefault.jpg)](https://www.youtube.com/watch?v=VwiSWpLlWq8)
 
 **Built with ❤️ for intelligent troubleshooting assistance**
