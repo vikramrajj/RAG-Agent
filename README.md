@@ -4,11 +4,11 @@ A sophisticated Retrieval-Augmented Generation (RAG) agent designed to provide i
 
 ## 🎬 Demo Video
 
-> **Watch the full demo**: Visit our [GitHub Pages site](https://vikramrajj.github.io/RAG-Agent/) to see RAG Agent in action!
+[![RAG Agent Demo](https://img.youtube.com/vi/VwiSWpLlWq8/maxresdefault.jpg)](https://youtu.be/VwiSWpLlWq8)
 
-[<img src="https://img.shields.io/badge/▶️_Watch_Demo-blue?style=for-the-badge&logo=youtube" alt="Watch Demo">](https://vikramrajj.github.io/RAG-Agent/)
+**[▶️ Watch on YouTube](https://youtu.be/VwiSWpLlWq8)** | **[🌐 View on GitHub Pages](https://vikramrajj.github.io/RAG-Agent/)**
 
-*The demo showcases smart query routing, Windows automation, web browser control, and real-time information retrieval.*
+*See RAG Agent in action: smart query routing, Windows automation, web browser control, and real-time information retrieval.*
 
 ## 🚀 Features
 
